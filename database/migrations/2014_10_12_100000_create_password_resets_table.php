@@ -14,7 +14,8 @@ return new class extends Migration
     public function up()
     {
         Schema::create('password_resets', function (Blueprint $table) {
-            $table->string('email')->primary();
+            $table->id(); // required primary key for MySQL
+            $table->string('email');
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
