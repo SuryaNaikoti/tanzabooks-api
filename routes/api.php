@@ -93,5 +93,8 @@ Route::group(['middleware' => 'auth:sanctum'], function (){
     Route::get('plans-delete', [SubscriptionsController::class, 'deleteActiveSubscription']);
 
 });
+Route::get('/test', function () {
+    return response()->json(['message' => 'API working']);
+});
 
 
