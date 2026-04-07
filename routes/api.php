@@ -20,12 +20,11 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
 */
+
+Route::options('{any}', function () {
+    return response()->json([], 200);
+})->where('any', '.*'); // ✅ THIS IS THE FIX (CORS preflight)
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -43,11 +42,12 @@ Route::get('sample-folder/{folder_id}', [TanzabooksController::class, 'sample_fo
 Route::get('sample-folders', [TanzabooksController::class, 'sample_folder']);
 Route::resource('tanzabook', TanzabooksController::class)->only('show');
 
-
 Route::group(['middleware' => 'auth:sanctum'], function (){
+
     Route::group(['middleware' => ['auth:sanctum', 'isActivePlan']], function () {
 
         Route::get('user-logout', [AuthController::class, 'logout']);
+
         Route::controller(DashBoardController::class)->group(function () {
             Route::get('dashboard', 'index');
         });
@@ -80,7 +80,6 @@ Route::group(['middleware' => 'auth:sanctum'], function (){
         Route::resource('upload', UploadController::class)->only('store');
         Route::resource('subscription', SubscriptionsController::class)->only('store');
 
-
     });
 
     Route::resource('plans', SubscriptionPlansController::class)->only('index');
@@ -93,8 +92,7 @@ Route::group(['middleware' => 'auth:sanctum'], function (){
     Route::get('plans-delete', [SubscriptionsController::class, 'deleteActiveSubscription']);
 
 });
+
 Route::get('/test', function () {
     return response()->json(['message' => 'API working']);
 });
-
-
