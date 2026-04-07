@@ -29,24 +29,16 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
             "Modules\\Payroll\\": ""
+        },
+        "files": [
+            "app/Http/Helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
         }
     },
-    "autoload": {
-    "psr-4": {
-        "App\\": "app/",
-        "Database\\Factories\\": "database/factories/",
-        "Database\\Seeders\\": "database/seeders/",
-        "Modules\\Payroll\\": ""
-    },
-    "files": [
-        "app/Http/Helpers.php"
-    ]
-},
-"autoload-dev": {
-    "psr-4": {
-        "Tests\\": "tests/"
-    }
-}
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -67,9 +59,7 @@
             "providers": [
                 "Modules\\Payroll\\Providers\\PayrollServiceProvider"
             ],
-            "aliases": {
-
-            }
+            "aliases": {}
         }
     },
     "config": {
