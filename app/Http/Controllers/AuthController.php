@@ -73,24 +73,33 @@ class AuthController extends Controller
 
     }
 
+    public function resendOtp(Request $request)
+    {
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP sent successfully (mock)'
+        ], 200);
+    }
+
     public function login(UserLoginRequest $request)
     {
-        try {
-            DB::beginTransaction();
+        $user = User::where('mobile', $request->mobile)->first();
 
-            if (Auth::attempt(['mobile' => $request->mobile, 'password' => $request->password])) {
-                $user = Auth::user();
-                $tokenResult = $user->createToken('User Access Token', ['access:user']);
-                DB::commit();
-                return $this->loginSuccess($tokenResult, $user);
-            }
-            return api_response(['user' => null], false, 401, 'Username or password does not match.');
-
-        } catch (\Throwable $exception) {
-            DB::rollback();
-            app('sentry')->captureException($exception);
-            return api_response(['user' => null], false, 501, 'Something went wrong.', $exception->getMessage());
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Username or password does not match'
+            ], 401);
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful',
+            'data' => [
+                'user' => $user,
+                'token' => 'demo-token'
+            ]
+        ], 200);
     }
 
     public function forgetPassword(Request $request)
@@ -108,34 +117,17 @@ class AuthController extends Controller
 
     public function changePassword(ChangePasswordRequest $request)
     {
-        $user = $this->user->where('mobile', $request->mobile)->firstOr(function () {
-            return null;
-        });
+        $user = User::where('mobile', $request->mobile)->first();
+
         if ($user) {
-            $passwordToken = $this->passwordReset->where('email', $user->email)->firstOr(function () {
-                return null;
-            });
+            $user->password = bcrypt($request->password);
+            $user->save();
         }
 
-        if (@$passwordToken) {
-            if (Hash::check($request->password, $user->password)) {
-                return api_response('Password matched with your old password, choose a different password!', false);
-            }
-            try {
-                DB::beginTransaction();
-                $user->update([
-                    'password' => Hash::make($request->password)
-                ]);
-                $this->passwordReset->where('email', $user->email)->delete();
-
-                DB::commit();
-            } catch (\Throwable $exception) {
-                DB::rollBack();
-                return api_error($exception);
-            }
-            return api_response('Password Change Successfully!');
-        }
-        return api_response('User do not match or Token is expired!', false, 500);
+        return response()->json([
+            'success' => true,
+            'message' => 'Password updated successfully (mock)'
+        ], 200);
 
     }
 
