@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::options('{any}', function () {
     return response()->json([], 200);
-})->where('any', '.*'); // ✅ THIS IS THE FIX (CORS preflight)
+})->where('any', '.*');
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

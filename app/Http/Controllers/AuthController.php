@@ -52,15 +52,11 @@ class AuthController extends Controller
 
             DB::commit();
 
-            if ($user->wasRecentlyCreated) {
-                $this->sendMobileOtp($request->mobile);
-                return $this->signupSuccess($user);
-            } elseif ($user->password == null) {
-                $this->sendMobileOtp($request->mobile);
-                return api_response(null, false, 200, 'An OTP is sent to your mobile, please create a Password');
-            } else {
-                return api_response(null, false, 200, 'User already exist');
-            }
+            return response()->json([
+                'success' => true,
+                'message' => 'User registered successfully',
+                'data' => $user
+            ], 200);
 
 
         } catch (\Throwable $exception) {
