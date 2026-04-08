@@ -19,50 +19,27 @@ trait SmsTrait
         $this->user = $user;
     }
 
-    protected function sendMobileOtp(int $mobile)
+    protected function sendMobileOtp($mobile)
     {
-        $token = getenv("TWILIO_AUTH_TOKEN");
-        $twilio_sid = getenv("TWILIO_SID");
-        $twilio_verify_sid = getenv("TWILIO_VERIFY_SID");
-        $twilio = new Client($twilio_sid, $token);
-        $twilio->verify->v2->services($twilio_verify_sid)
-            ->verifications
-            ->create('+91' . $mobile, "sms");
+        // Mocked logic - no external API called
     }
 
-    protected function verifyMobileOtp(int $otp, int $mobile)
+    protected function verifyMobileOtp($otp, $mobile)
     {
-        $user = $this->user->where('mobile', $mobile)->firstOrFail();
-
-        $token = getenv("TWILIO_AUTH_TOKEN");
-        $twilio_sid = getenv("TWILIO_SID");
-        $twilio_verify_sid = getenv("TWILIO_VERIFY_SID");
-        $twilio = new Client($twilio_sid, $token);
-
-        try {
-            $verification = $twilio->verify->v2->services($twilio_verify_sid)
-                ->verificationChecks
-                ->create([
-                    'to' => '+91' . $mobile,
-                    "code" => $otp
-                ]);
-            if ($verification->valid) {
-                //update user mobile verification
-                $user->update(['mobile_verified_at' => now()]);
-
-                //generate password reset token
-                $token = Str::random(60);
-                $this->passwordReset->insert([
-                    'email' => $user->email,
-                    'token' => $token,
-                    'created_at' => Carbon::now()
-                ]);
-                return api_response($token, true, 200, 'Password reset token generated!');
-            }
-        } catch (\Throwable $exception){
-            DB::rollBack();
-            return api_error($exception);
+        $user = $this->user->where('mobile', $mobile)->first();
+        
+        if ($user) {
+            // Update user mobile verification
+            $user->update(['mobile_verified_at' => now()]);
         }
-        return api_response(null, false, 500, 'OTP Do not match!');
+
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP verified successfully (mock)',
+            'data' => [
+                'user' => $user ?? null,
+                'token' => 'demo-token'
+            ]
+        ], 200);
     }
 }
