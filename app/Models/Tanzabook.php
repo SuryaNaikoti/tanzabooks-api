@@ -14,6 +14,7 @@ class Tanzabook extends Model
         'group_id',
         'name',
         'file_id',
+        'file_path',
         'status'
     ];
 

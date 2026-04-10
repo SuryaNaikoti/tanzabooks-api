@@ -45,43 +45,38 @@ class TanzabooksController extends Controller
         //
     }
 
-    public function store(StoreTanzabookRequest $request)
+    public function store(Request $request)
     {
-        if ($request->type == 'folder'){
-            if (!Folder::where(['id' => $request->folder_id, 'user_id' => Auth::id()])->count())
-                return api_response(null, false, 404, 'folder does not exist or you do not own this folder!!');
-        }
-
-        if ($request->type == 'group'){
-            if (!Group::where(['id' => $request->group_id])->count())
-                return api_response(null, false, 404, 'group does not exist or you do not own this group!!');
-        }
+        $request->validate([
+            'name' => 'required|string',
+            'folder_id' => 'required|exists:folders,id',
+            'file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240'
+        ]);
 
         try {
-            DB::beginTransaction();
-            $upload = $this->uploadFile($request->file, User::class, Auth::id());
-
-            $createTb = $this->tanzabook->create([
-                'folder_id' => $request->folder_id,
-                'group_id' => $request->group_id,
-                'name' => $request->name,
-                'file_id' => $upload->id,
-                'active' => 'active',
-            ]);
-
-            if ($request->type == 'folder') {
-                $this->tanzabookUser->create([
-                    'tanzabook_id' => $createTb->id,
-                    'user_id' => Auth::id(),
-                    'shared_type' => 'owner'
-                ]);
+            $path = null;
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $path = $file->store('tanzabooks', 'public');
             }
 
-            DB::commit();
-            return api_response($createTb, true, 201, 'Tanzabook Created!!');
-        }
-        catch (\Throwable $exception){
-            return api_error($exception);
+            $tanzabook = Tanzabook::create([
+                'name' => $request->name,
+                'folder_id' => $request->folder_id,
+                'file_path' => $path ?? null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tanzabook created successfully',
+                'data' => $tanzabook
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
         }
     }
 
