@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BriefFolder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class BriefFolderController extends Controller
@@ -16,22 +16,21 @@ class BriefFolderController extends Controller
      */
     public function store(Request $request)
     {
-        Log::info('BriefFolder creation attempt', ['data' => $request->all(), 'user_id' => Auth::id()]);
+        Log::info('BriefFolder creation attempt', ['data' => $request->all(), 'user_id' => auth()->id()]);
 
-        // Simple validation as requested
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
 
-        // For now, returning success message as requested
+        $folder = BriefFolder::create([
+            'name' => $request->name,
+            'user_id' => auth()->id(),
+        ]);
+
         return response()->json([
-            'success' => true,
-            'message' => 'Brief folder created successfully',
-            'data' => [
-                'name' => $request->name,
-                'user_id' => Auth::id(),
-                'created_at' => now(),
-            ]
+            'id' => $folder->id,
+            'name' => $folder->name,
+            'created_at' => $folder->created_at
         ], 201);
     }
 }

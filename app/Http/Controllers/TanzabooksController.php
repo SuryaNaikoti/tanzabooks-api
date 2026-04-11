@@ -47,36 +47,48 @@ class TanzabooksController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string',
-            'folder_id' => 'required|exists:folders,id',
-            'file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240'
-        ]);
-
         try {
-            $path = null;
-            if ($request->hasFile('file')) {
-                $file = $request->file('file');
-                $path = $file->store('tanzabooks', 'public');
+            \Illuminate\Support\Facades\Log::info($request->all());
+
+            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'name' => 'required|string',
+                'file' => 'required|file',
+                'folder_id' => 'nullable|integer',
+                'type' => 'nullable|string|in:file,folder'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
             }
 
-            $tanzabook = Tanzabook::create([
+            $type = $request->input('type', 'file');
+
+            $path = $request->file('file')->store('uploads', 'public');
+
+            $item = Tanzabook::create([
                 'name' => $request->name,
                 'folder_id' => $request->folder_id,
-                'file_path' => $path ?? null,
+                'file_path' => $path,
+                'type' => $type
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Tanzabook created successfully',
-                'data' => $tanzabook
-            ]);
+                'message' => 'File uploaded successfully',
+                'data' => $item
+            ], 200);
 
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error($e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
-            ], 422);
+                'message' => 'Server error'
+            ], 500);
         }
     }
 
