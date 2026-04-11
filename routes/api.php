@@ -13,6 +13,7 @@ use App\Http\Controllers\TanzabooksController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AnnotationsController;
+use App\Http\Controllers\BriefFolderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,7 @@ Route::controller(AuthController::class)->group(function (){
     Route::post('user-login', 'login');
     Route::post('create-password', 'changePassword');
     Route::post('verify-mobile-otp', 'verifyOtp');
+    Route::post('resend-otp', 'resendOtp');
     Route::post('forget-password', 'forgetPassword');
 });
 
@@ -47,6 +49,7 @@ Route::group(['middleware' => 'auth:sanctum'], function (){
     Route::group(['middleware' => ['auth:sanctum', 'isActivePlan']], function () {
 
         Route::get('user-logout', [AuthController::class, 'logout']);
+        Route::post('brief-folder', [BriefFolderController::class, 'store']);
 
         Route::controller(DashBoardController::class)->group(function () {
             Route::get('dashboard', 'index');
@@ -76,7 +79,8 @@ Route::group(['middleware' => 'auth:sanctum'], function (){
         Route::resource('folder', FoldersController::class)->only('store', 'show', 'destroy', 'update');
         Route::resource('group', GroupsController::class)->only('store', 'show', 'update', 'destroy');
         Route::resource('group-member', GroupUsersController::class)->only('store');
-        Route::resource('tanzabook', TanzabooksController::class)->only('store', 'destroy', 'update');
+        Route::post('/tanzabooks', [TanzabooksController::class, 'store']);
+        Route::resource('tanzabook', TanzabooksController::class)->only('destroy', 'update');
         Route::resource('upload', UploadController::class)->only('store');
         Route::resource('subscription', SubscriptionsController::class)->only('store');
 
