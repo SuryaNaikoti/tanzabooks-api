@@ -50,10 +50,14 @@ class TanzabooksController extends Controller
         try {
             \Illuminate\Support\Facades\Log::info($request->all());
 
+            if ($request->hasFile('file')) {
+                \Illuminate\Support\Facades\Log::info('Uploading file size: ' . $request->file('file')->getSize());
+            }
+
             $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
                 'name' => 'required|string',
-                'file' => 'required|file',
-                'folder_id' => 'nullable|integer',
+                'file' => 'required|file|max:51200',
+                'folder_id' => 'required|integer',
                 'type' => 'nullable|string|in:file,folder'
             ]);
 
