@@ -1,0 +1,14 @@
+name: tanzabooks-api
+
+services:
+  - name: web
+    http_port: 8080
+    routes:
+      - path: /
+    health_check:
+      http_path: /
+    envs:
+      - key: PHP_UPLOAD_MAX_FILESIZE
+        value: 50M
+      - key: PHP_POST_MAX_SIZE
+        value: 50M
