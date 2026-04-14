@@ -1,33 +1,50 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace App\Http;
 
-use Closure;
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
-class HandleCors
+class Kernel extends HttpKernel
 {
-    public function handle(Request $request, Closure $next)
-    {
-        $headers = [
-            'Access-Control-Allow-Origin' => '*',
-            'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, 
-OPTIONS',
-            'Access-Control-Allow-Headers' => 'Content-Type, 
-Authorization',
-        ];
+    /**
+     * Global HTTP middleware stack.
+     */
+    protected $middleware = [
+        \App\Http\Middleware\TrustProxies::class,
+        \Illuminate\Http\Middleware\HandleCors::class,
+        \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
+        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
+        \App\Http\Middleware\TrimStrings::class,
+        \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+    ];
 
-        // Handle preflight request
-        if ($request->getMethod() === "OPTIONS") {
-            return response()->json([], 200, $headers);
-        }
+    /**
+     * Route middleware groups.
+     */
+    protected $middlewareGroups = [
+        'web' => [
+            \App\Http\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ],
 
-        $response = $next($request);
+        'api' => [
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ],
+    ];
 
-        foreach ($headers as $key => $value) {
-            $response->headers->set($key, $value);
-        }
+    /**
+     * Route middleware.
+     */
+    protected $routeMiddleware = [
+        'auth' => \App\Http\Middleware\Authenticate::class,
+        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-        return $response;
-    }
+        // Your custom middleware
+        'isMobileVerified' => \App\Http\Middleware\IsMobileVerified::class,
+        'isActivePlan' => \App\Http\Middleware\IsActivePlan::class,
+    ];
 }
