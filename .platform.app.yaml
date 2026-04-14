@@ -12,3 +12,10 @@ services:
         value: 50M
       - key: PHP_POST_MAX_SIZE
         value: 50M
+services:
+  - name: tanzabooks-api
+    environment_slug: php
+    instance_size_slug: basic-xxs
+
+    run_command: |
+      php -d upload_max_filesize=50M -d post_max_size=50M artisan serve --host=0.0.0.0 --port=8080
